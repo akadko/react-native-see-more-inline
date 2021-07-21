@@ -83,23 +83,29 @@ class SeeMore extends React.Component {
   }
 
   handleLinkPressed() {
-    this.setState({
-      isLinkPressed: true,
-    });
+    if (!this.props.ignorePress) {
+      this.setState({
+        isLinkPressed: true,
+      })
+    };
   }
 
   handleLinkTerminated() {
-    this.setState({
-      isLinkPressed: false,
-    });
+    if (!this.props.ignorePress) {
+      this.setState({
+        isLinkPressed: false,
+      });
+    }
   }
 
   handleLinkReleased() {
-    const { isShowingMore } = this.state;
-    this.setState({
-      isLinkPressed: false,
-      isShowingMore: !isShowingMore,
-    });
+    if (!this.props.ignorePress) {
+      const {isShowingMore} = this.state;
+      this.setState({
+        isLinkPressed: false,
+        isShowingMore: !isShowingMore,
+      });
+    }
   }
 
   renderSeeMoreSeeLessLink() {
@@ -154,6 +160,7 @@ SeeMore.propTypes = {
   linkStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   seeMoreText: PropTypes.string,
   seeLessText: PropTypes.string,
+  ignorePress: PropTypes.bool,
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
 };
 
@@ -162,6 +169,7 @@ SeeMore.defaultProps = {
   linkPressedColor: '#163772',
   seeMoreText: 'see more',
   seeLessText: 'see less',
+  ignorePress: false,
   style: {
     fontFamily: undefined,
     fontSize: 14,
