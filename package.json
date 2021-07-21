@@ -32,7 +32,7 @@
   "dependencies": {
     "lodash": "^4.17.21",
     "prop-types": "^15.7.2",
-    "react-native-text-size": "^4.0.0-rc.1",
+    "react-native-text-size": "^4.0.0-rc.1"
   },
   "devDependencies": {
     "@testing-library/react-native": "^5.0.3",
