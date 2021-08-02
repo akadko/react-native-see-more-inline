@@ -41,7 +41,7 @@ async function getTruncationIndex(
    * Max possible width of the text when it is collapsed.
    * 10 is approx value of white space width per line.
    */
-  const widthLimit = (containerWidth - 10) * numberOfLines;
+  const widthLimit = (containerWidth - 30) * numberOfLines;
 
   if (totalTextWidth < widthLimit) {
     return undefined;
@@ -51,26 +51,55 @@ async function getTruncationIndex(
   let start = 0;
   let end = text.length - 1;
 
-  while (start <= end) {
-    const middle = start + (end - start) / 2;
-    // eslint-disable-next-line no-await-in-loop
-    const { width: partialTextWidth } = await reactNativeTextSize.measure({
-      text: text.slice(0, middle),
+  let nextSpaceIndex = 0
+  let currentLine = ''
+  let currentWidth = 0
+  let lastLineStartIndex = 0
+  let breaksCount = 0
+
+  let i = 0
+  while (start <= end && breaksCount < numberOfLines) {
+    const slicedText = text.slice(start)
+    nextSpaceIndex = slicedText.indexOf(' ')
+    const nextWord = slicedText.slice(0, nextSpaceIndex)
+    const { width: potentialLineWidth } = await reactNativeTextSize.measure({
+      text: currentLine + nextWord,
       fontSize: scaledFontSize,
       fontFamily,
       fontWeight,
     });
-    if (Math.abs(widthLimit - partialTextWidth) <= DIFFERENCE_THRESHOLD) {
-      index = middle;
-      break;
-    } else if (partialTextWidth > widthLimit) {
-      end = middle - 1;
+    if (potentialLineWidth > containerWidth) {
+      currentLine = nextWord + ' '
+      lastLineStartIndex = start
+      breaksCount++
     } else {
-      start = middle + 1;
+      currentLine += nextWord + ' '
     }
+    if (currentWidth + potentialLineWidth > totalTextWidth) {
+      index = start
+      break
+    }
+    currentWidth += potentialLineWidth
+    start += nextSpaceIndex + 1
+    index = start
+    i++
   }
 
-  let truncationIndex = Math.floor(index) - (seeMoreText.length + 10);
+  end = start + nextSpaceIndex
+  while (start <= end) {
+    const { width: partialTextWidth } = await reactNativeTextSize.measure({
+      text: text.slice(lastLineStartIndex, start),
+      fontSize: scaledFontSize,
+      fontFamily,
+      fontWeight,
+    });
+    if (Math.abs(containerWidth - partialTextWidth) <= DIFFERENCE_THRESHOLD) {
+      break
+    }
+    start++
+  }
+  index = start - 1
+  let truncationIndex = index - (seeMoreText.length + 12);
 
   // If there is a new line character before this truncation index, this will break
   // So we find the first new line character before truncationIndex and set that as the
